@@ -3,7 +3,7 @@
 # standard imports
 from os import path
 import struct
-
+from subprocess import Popen
 
 # utils
 import cmdr_utils
@@ -11,11 +11,12 @@ import cmdr_utils
 # library imports
 from porcupine import Porcupine
 import pyaudio
+# from play_despacito import play_audio_file
 
 
 
 def init_porcupine ():
-	# set up Porcupine params
+	"""Set up Porcupine params, and return an instance of Porcupine"""
 	PORCUPINE_ROOT_PATH = "Porcupine"
 	porcupine_lib_path = path.join ( "Porcupine", cmdr_utils.rel_library_path() )
 	porcupine_model_file_path = path.join ( PORCUPINE_ROOT_PATH, "lib/common/porcupine_params.pv" )
@@ -25,8 +26,9 @@ def init_porcupine ():
 		path.join ( PORCUPINE_ROOT_PATH, "keywords", "porcupine_%s.ppn" % porcupine_kw_file_ext ),
 		path.join ( PORCUPINE_ROOT_PATH, "keywords", "buttery_chocolate_%s.ppn" % porcupine_kw_file_ext ),
 		path.join ( PORCUPINE_ROOT_PATH, "keywords", "ill_be_back_%s.ppn" % porcupine_kw_file_ext ),
+		path.join ( PORCUPINE_ROOT_PATH, "keywords", "play_despacito_%s.ppn" % porcupine_kw_file_ext ),
 	]
-	porcupine_kw_sensitivities = [ 0.4, 0.25, 0.4, 0.45 ]
+	porcupine_kw_sensitivities = [ 0.4, 0.25, 0.4, 0.45, 0.666 ]
 
 	return Porcupine ( 
 		porcupine_lib_path, 
@@ -38,7 +40,7 @@ def init_porcupine ():
 
 
 def init_input_audio_stream ( handler_instance, device=None ):
-	# init audio stream (pyaudio)
+	"""Init and return audio stream (pyaudio)"""
 	pa = pyaudio.PyAudio()
 	return pa.open(
 		rate=handler_instance.sample_rate,
@@ -49,6 +51,13 @@ def init_input_audio_stream ( handler_instance, device=None ):
 		input_device_index=device
 	)
 
+
+
+def play_despacito ():
+	"""Does exactly what it sounds like"""
+	despacito_path = "assets/music/despacito.mp3"
+	cmdlist = [ 'ffplay', '-nodisp', despacito_path ]
+	Popen ( cmdlist )
 
 
 
@@ -73,6 +82,9 @@ def main ():
 		if keyword_index >= 0:
 			# detection event logic/callback
 			print ( "keyword detected!", keyword_index )
+
+		if keyword_index == 4:
+			play_despacito()		# kek
 
 
 
