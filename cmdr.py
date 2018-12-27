@@ -21,13 +21,12 @@ def init_porcupine ():
 	porcupine_model_file_path = path.join ( PORCUPINE_ROOT_PATH, "lib/common/porcupine_params.pv" )
 	porcupine_kw_file_ext = cmdr_utils.porcupine_keyword_file_extension()
 	porcupine_keyword_file_paths = [		# these files are the encoded keywords
-		path.join ( PORCUPINE_ROOT_PATH, "keywords", "hey_alexa_%s.ppn" % porcupine_kw_file_ext ),
-		path.join ( PORCUPINE_ROOT_PATH, "keywords", "porcupine_%s.ppn" % porcupine_kw_file_ext ),
 		path.join ( PORCUPINE_ROOT_PATH, "keywords", "buttery_chocolate_%s.ppn" % porcupine_kw_file_ext ),
-		path.join ( PORCUPINE_ROOT_PATH, "keywords", "ill_be_back_%s.ppn" % porcupine_kw_file_ext ),
+		path.join ( PORCUPINE_ROOT_PATH, "keywords", "hey_monica_%s.ppn" % porcupine_kw_file_ext ),
+		path.join ( PORCUPINE_ROOT_PATH, "keywords", "monica_%s.ppn" % porcupine_kw_file_ext ),
 		path.join ( PORCUPINE_ROOT_PATH, "keywords", "play_despacito_%s.ppn" % porcupine_kw_file_ext ),
 	]
-	porcupine_kw_sensitivities = [ 0.4, 0.25, 0.4, 0.45, 0.666 ]
+	porcupine_kw_sensitivities = [ 0.25, 0.4, 0.4, 0.4, 0.666 ]
 
 	return Porcupine ( 
 		porcupine_lib_path, 
@@ -103,6 +102,3 @@ def cleanup ( porcupine ):
 
 if __name__ == "__main__":
 	main()
-
-
-print ( "hello cmdr" )
