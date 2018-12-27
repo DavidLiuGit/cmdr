@@ -3,7 +3,7 @@
 # standard imports
 from os import path
 import struct
-from subprocess import Popen
+from subprocess import Popen, DEVNULL
 
 # utils
 import cmdr_utils
@@ -56,8 +56,19 @@ def init_input_audio_stream ( handler_instance, device=None ):
 def play_despacito ():
 	"""Does exactly what it sounds like"""
 	despacito_path = "assets/music/despacito.mp3"
-	cmdlist = [ 'ffplay', '-nodisp', despacito_path ]
-	Popen ( cmdlist )
+	return play_audio_background ( despacito_path )
+	# cmdlist = [ 'ffplay', '-nodisp', despacito_path ]
+	# Popen ( cmdlist )
+
+
+def play_audio_background ( audio_file_path ):
+	"""
+	Using `ffplay`, a `ffmpeg` utility, to play audio in background.  
+	Return the process object so that it can be manipulated (i.e. send SIGINT, SIGTERM)
+	"""
+	cmdlist = [ 'ffplay', '-nodisp', audio_file_path ]
+	print ( '$', ' '.join(cmdlist) )
+	return Popen ( cmdlist, stdout=DEVNULL )
 
 
 
@@ -72,19 +83,28 @@ def main ():
 	# init audio stream (pyaudio)
 	audio_stream = init_input_audio_stream(handle)
 
-	# listen for keyword
+	# track any active background processes (1 is allowed at any time)
+	active_process = None
+
+	# listen for keyword in a loop
 	while True:
 		# pcm = get_next_audio_frame()
 		pcm = audio_stream.read(handle.frame_length)
 		pcm = struct.unpack_from("h" * handle.frame_length, pcm)
 
 		keyword_index = handle.process(pcm)
+		# if a keyword is detected
 		if keyword_index >= 0:
+			# if there is an active background process, kill it
+			if active_process:
+				active_process.terminate()
+
 			# detection event logic/callback
 			print ( "keyword detected!", keyword_index )
 
 		if keyword_index == 4:
-			play_despacito()		# kek
+			active_process = play_despacito()
+			print ( active_process.pid )		# kek
 
 
 
