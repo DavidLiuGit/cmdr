@@ -4,6 +4,15 @@ import platform
 import os
 
 
+class CmdrState:
+
+	def __init__ (self):
+		self.active_process = None		#
+
+
+
+
+
 
 def module_from_file ( module_name, file_path ):
     spec = importlib.util.spec_from_file_location(module_name, file_path)

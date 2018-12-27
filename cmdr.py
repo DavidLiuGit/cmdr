@@ -3,15 +3,14 @@
 # standard imports
 from os import path
 import struct
-from subprocess import Popen, DEVNULL
 
 # utils
 import cmdr_utils
+import cmdr_funcs
 
 # library imports
 from porcupine import Porcupine
 import pyaudio
-# from play_despacito import play_audio_file
 
 
 
@@ -53,22 +52,13 @@ def init_input_audio_stream ( handler_instance, device=None ):
 
 
 
-def play_despacito ():
-	"""Does exactly what it sounds like"""
-	despacito_path = "assets/music/despacito.mp3"
-	return play_audio_background ( despacito_path )
-	# cmdlist = [ 'ffplay', '-nodisp', despacito_path ]
-	# Popen ( cmdlist )
 
+def handle_keyword_detected ( cmdr_state, kw_index ):
+	print ( "keyword detected!", kw_index )
 
-def play_audio_background ( audio_file_path ):
-	"""
-	Using `ffplay`, a `ffmpeg` utility, to play audio in background.  
-	Return the process object so that it can be manipulated (i.e. send SIGINT, SIGTERM)
-	"""
-	cmdlist = [ 'ffplay', '-nodisp', audio_file_path ]
-	print ( '$', ' '.join(cmdlist) )
-	return Popen ( cmdlist, stdout=DEVNULL )
+	if kw_index == 4:
+		active_process = cmdr_funcs.play_despacito()
+		cmdr_state.active_process = active_process
 
 
 
@@ -83,12 +73,11 @@ def main ():
 	# init audio stream (pyaudio)
 	audio_stream = init_input_audio_stream(handle)
 
-	# track any active background processes (1 is allowed at any time)
-	active_process = None
+	# track the state, including any active (background) process
+	state = cmdr_utils.CmdrState()
 
 	# listen for keyword in a loop
 	while True:
-		# pcm = get_next_audio_frame()
 		pcm = audio_stream.read(handle.frame_length)
 		pcm = struct.unpack_from("h" * handle.frame_length, pcm)
 
@@ -96,16 +85,11 @@ def main ():
 		# if a keyword is detected
 		if keyword_index >= 0:
 			# if there is an active background process, kill it
-			if active_process:
-				active_process.terminate()
+			if state.active_process:
+				state.active_process.terminate()
 
-			# detection event logic/callback
-			print ( "keyword detected!", keyword_index )
-
-		if keyword_index == 4:
-			active_process = play_despacito()
-			print ( active_process.pid )		# kek
-
+			# handle keyword detection event
+			handle_keyword_detected ( state, keyword_index )
 
 
 	# cleanup
