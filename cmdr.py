@@ -3,6 +3,7 @@
 # standard imports
 from os import path
 import struct
+from sys import stderr
 
 # utils
 import cmdr_utils
@@ -63,7 +64,16 @@ def init_input_audio_stream ( handler_instance, device=None ):
 
 
 def handle_keyword_detected ( cmdr_state, kw_index ):
-	print ( "keyword detected!", kw_index )
+	"""Handle Porcupine keyword detection event"""
+	try:
+		keyword_obj = cmdr_state.config['porcupine']['keywords']['list'][kw_index]
+	except:
+		print ( "Error: keyword index out of bounds", file=stderr, flush=True )
+
+	print ( 
+		"Keyword detected!", 
+		kw_index, 
+		keyword_obj['title'] )
 
 	if kw_index == 3:
 		active_process = cmdr_funcs.play_despacito()

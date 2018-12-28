@@ -2,6 +2,8 @@
 from subprocess import Popen, DEVNULL
 
 
+
+
 def play_despacito ():
 	"""Does exactly what it sounds like"""
 	despacito_path = "assets/music/despacito.mp3"
