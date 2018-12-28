@@ -1,6 +1,7 @@
 import ctypes
 import os
 from ctypes import *
+from ctypes import util as ctypes_util
 from enum import Enum
 
 
@@ -43,7 +44,8 @@ class Cheetah(object):
         :param license_file_path : Absolute path to license file.
         """
 
-        self._libc = CDLL(ctypes.util.find_library('c'))
+        # self._libc = CDLL(util.find_library('c'))
+        self._libc = CDLL(ctypes_util.find_library('c'))
 
         if not os.path.exists(library_path):
             raise IOError("Could not find Cheetah's library at '%s'" % library_path)
