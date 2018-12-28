@@ -11,6 +11,7 @@ import cmdr_funcs
 
 # library imports
 from porcupine import Porcupine
+from cheetah import Cheetah
 import pyaudio
 
 
@@ -48,6 +49,22 @@ def init_porcupine ( cfg ):
 
 
 
+def init_cheetah ( cfg ):
+	"""Set up Cheetah params, and return an instance of Cheetah"""
+	root_path = cfg['root_path']
+	lib_path = path.join ( root_path, cfg['lib_path'] )
+	acoustic_model_path = path.join ( root_path, cfg['acoustic_model_path'] )
+	language_model_path = path.join ( root_path, cfg['language_model_path'] )
+	license_path = path.join ( root_path, cfg['license_path'] )
+
+	# init and return
+	return Cheetah (
+		lib_path, acoustic_model_path,
+		language_model_path, license_path
+	)
+
+
+
 def init_input_audio_stream ( handler_instance, device=None ):
 	"""Init and return audio stream (pyaudio)"""
 	pa = pyaudio.PyAudio()
@@ -78,6 +95,8 @@ def handle_keyword_detected ( cmdr_state, kw_index ):
 	if kw_index == 3:
 		active_process = cmdr_funcs.play_despacito()
 		cmdr_state.active_process = active_process
+	else:
+		pass
 
 
 
@@ -90,29 +109,32 @@ def main ():
 	state = cmdr_utils.CmdrState()
 
 	# init Porcupine
-	handle = init_porcupine ( state.config['porcupine'] )
+	porcupine = init_porcupine ( state.config['porcupine'] )
+
+	# init Cheetah
+	cheetah = init_cheetah ( state.config['cheetah'] )
 
 	# init audio stream (pyaudio)
-	audio_stream = init_input_audio_stream(handle)
+	audio_stream = init_input_audio_stream(porcupine)
 
 	# listen for keyword in a loop
 	while True:
-		pcm = audio_stream.read(handle.frame_length)
-		pcm = struct.unpack_from("h" * handle.frame_length, pcm)
+		pcm = audio_stream.read(porcupine.frame_length)
+		pcm = struct.unpack_from("h" * porcupine.frame_length, pcm)
 
-		keyword_index = handle.process(pcm)
+		keyword_index = porcupine.process(pcm)
 		# if a keyword is detected
 		if keyword_index >= 0:
 			# if there is an active background process, kill it
 			if state.active_process:
 				state.active_process.terminate()
 
-			# handle keyword detection event
+			# porcupine keyword detection event
 			handle_keyword_detected ( state, keyword_index )
 
 
 	# cleanup
-	cleanup ( handle )
+	cleanup ( porcupine )
 
 
 
