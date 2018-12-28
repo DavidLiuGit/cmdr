@@ -9,17 +9,23 @@ from pprint import pprint
 class CmdrState:
 
 	def __init__ (self):
-		self.config()		# read in config file, config.json
+		self.config = self.load_config()		# read in config file, config.json
 		self.active_process = None		#
 
-	def config ( self, file='config.json' ):
+	def load_config ( self, file="config.json" ):
 		"""Read in the JSON config file as a dict for easy reference"""
 		with open(file) as f:
-			self.config = json_load(f)
-		print ( "Cmdr version ", self.config["version"] )
-		return self.config
+			cfg = json_load(f)
+		print ( "Cmdr version ", cfg["version"] )
+		return cfg
 
 
+# class CmdrConfig:
+# 	def __init__ ( self, file="config.json" ):
+# 		"""Read in the JSON config file as a dict for easy reference"""
+# 		with open(file) as f:
+# 			self = json_load(f)
+# 		print ( "Cmdr version ", self["version"] )
 
 
 
