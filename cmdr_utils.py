@@ -2,13 +2,22 @@
 import importlib, importlib.util
 import platform
 import os
+from json import load as json_load
+from pprint import pprint
 
 
 class CmdrState:
 
 	def __init__ (self):
+		self.config()		# read in config file, config.json
 		self.active_process = None		#
 
+	def config ( self, file='config.json' ):
+		"""Read in the JSON config file as a dict for easy reference"""
+		with open(file) as f:
+			self.config = json_load(f)
+		print ( "Cmdr version ", self.config["version"] )
+		return self.config
 
 
 
