@@ -29,5 +29,12 @@
 				}
 			]
 		}
+	},
+	"cheetah": {
+		"root_path": "cheetah",
+		"lib_path": "lib/linux/x86_64/libpv_cheetah.so",
+		"acoustic_model_path": "lib/common/acoustic_model.pv",
+		"language_model_path": "lib/common/language_model.pv",
+		"license_path": "resources/license/cheetah_eval_linux_public.lic"
 	}
 }

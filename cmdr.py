@@ -3,6 +3,8 @@
 # standard imports
 from os import path
 import struct
+from sys import stderr
+import signal
 
 # utils
 import cmdr_utils
@@ -10,6 +12,7 @@ import cmdr_funcs
 
 # library imports
 from porcupine import Porcupine
+from cheetah import Cheetah
 import pyaudio
 
 
@@ -47,6 +50,22 @@ def init_porcupine ( cfg ):
 
 
 
+def init_cheetah ( cfg ):
+	"""Set up Cheetah params, and return an instance of Cheetah"""
+	root_path = cfg['root_path']
+	lib_path = path.join ( root_path, cfg['lib_path'] )
+	acoustic_model_path = path.join ( root_path, cfg['acoustic_model_path'] )
+	language_model_path = path.join ( root_path, cfg['language_model_path'] )
+	license_path = path.join ( root_path, cfg['license_path'] )
+
+	# init and return
+	return Cheetah (
+		lib_path, acoustic_model_path,
+		language_model_path, license_path
+	)
+
+
+
 def init_input_audio_stream ( handler_instance, device=None ):
 	"""Init and return audio stream (pyaudio)"""
 	pa = pyaudio.PyAudio()
@@ -61,13 +80,48 @@ def init_input_audio_stream ( handler_instance, device=None ):
 
 
 
+def break_loop (signal, frame):
+	global interrupted
+	if interrupted:
+		exit(0)			# if interrupt flag already set, exit as normal
+	interrupted = True	# otherwise, set the interrupt flag
+signal.signal(signal.SIGINT, break_loop)
+signal.signal(signal.SIGSTOP, break_loop)
+interrupted = True
 
-def handle_keyword_detected ( cmdr_state, kw_index ):
-	print ( "keyword detected!", kw_index )
+
+def handle_keyword_detected ( cmdr_state, kw_index, cheetah ):
+	"""Handle Porcupine keyword detection event"""
+	try:
+		keyword_obj = cmdr_state.config['porcupine']['keywords']['list'][kw_index]
+	except:
+		print ( "Error: keyword index out of bounds", file=stderr, flush=True )
+
+	print ( 
+		"Keyword detected!", 
+		kw_index, 
+		keyword_obj['title'] )
 
 	if kw_index == 3:
 		active_process = cmdr_funcs.play_despacito()
 		cmdr_state.active_process = active_process
+	else:
+		audio_stream = init_input_audio_stream ( cheetah )
+		print (cheetah.frame_length)
+		global interrupted
+		interrupted = False
+		while True:
+			pcm = audio_stream.read ( cheetah.frame_length )
+			pcm = struct.unpack_from ("h" * cheetah.frame_length, pcm)
+			cheetah.process(pcm)
+
+			if interrupted:
+				break
+
+		print ( cheetah.transcribe() )
+		# global interrupted
+		interrupted = True
+
 
 
 
@@ -80,29 +134,32 @@ def main ():
 	state = cmdr_utils.CmdrState()
 
 	# init Porcupine
-	handle = init_porcupine ( state.config['porcupine'] )
+	porcupine = init_porcupine ( state.config['porcupine'] )
+
+	# init Cheetah
+	cheetah = init_cheetah ( state.config['cheetah'] )
 
 	# init audio stream (pyaudio)
-	audio_stream = init_input_audio_stream(handle)
+	audio_stream = init_input_audio_stream(porcupine)
 
 	# listen for keyword in a loop
 	while True:
-		pcm = audio_stream.read(handle.frame_length)
-		pcm = struct.unpack_from("h" * handle.frame_length, pcm)
+		pcm = audio_stream.read(porcupine.frame_length)
+		pcm = struct.unpack_from("h" * porcupine.frame_length, pcm)
 
-		keyword_index = handle.process(pcm)
+		keyword_index = porcupine.process(pcm)
 		# if a keyword is detected
 		if keyword_index >= 0:
 			# if there is an active background process, kill it
 			if state.active_process:
 				state.active_process.terminate()
 
-			# handle keyword detection event
-			handle_keyword_detected ( state, keyword_index )
+			# porcupine keyword detection event
+			handle_keyword_detected ( state, keyword_index, cheetah )
 
 
 	# cleanup
-	cleanup ( handle )
+	cleanup ( porcupine )
 
 
 
