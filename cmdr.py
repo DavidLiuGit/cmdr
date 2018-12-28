@@ -4,6 +4,7 @@
 from os import path
 import struct
 from sys import stderr
+import signal
 
 # utils
 import cmdr_utils
@@ -79,8 +80,17 @@ def init_input_audio_stream ( handler_instance, device=None ):
 
 
 
+def break_loop (signal, frame):
+	global interrupted
+	if interrupted:
+		exit(0)			# if interrupt flag already set, exit as normal
+	interrupted = True	# otherwise, set the interrupt flag
+signal.signal(signal.SIGINT, break_loop)
+signal.signal(signal.SIGSTOP, break_loop)
+interrupted = True
 
-def handle_keyword_detected ( cmdr_state, kw_index ):
+
+def handle_keyword_detected ( cmdr_state, kw_index, cheetah ):
 	"""Handle Porcupine keyword detection event"""
 	try:
 		keyword_obj = cmdr_state.config['porcupine']['keywords']['list'][kw_index]
@@ -96,7 +106,22 @@ def handle_keyword_detected ( cmdr_state, kw_index ):
 		active_process = cmdr_funcs.play_despacito()
 		cmdr_state.active_process = active_process
 	else:
-		pass
+		audio_stream = init_input_audio_stream ( cheetah )
+		print (cheetah.frame_length)
+		global interrupted
+		interrupted = False
+		while True:
+			pcm = audio_stream.read ( cheetah.frame_length )
+			pcm = struct.unpack_from ("h" * cheetah.frame_length, pcm)
+			cheetah.process(pcm)
+
+			if interrupted:
+				break
+
+		print ( cheetah.transcribe() )
+		# global interrupted
+		interrupted = True
+
 
 
 
@@ -130,7 +155,7 @@ def main ():
 				state.active_process.terminate()
 
 			# porcupine keyword detection event
-			handle_keyword_detected ( state, keyword_index )
+			handle_keyword_detected ( state, keyword_index, cheetah )
 
 
 	# cleanup
