@@ -14,21 +14,30 @@ import pyaudio
 
 
 
-def init_porcupine ():
+def init_porcupine ( cfg ):
 	"""Set up Porcupine params, and return an instance of Porcupine"""
-	PORCUPINE_ROOT_PATH = "Porcupine"
-	porcupine_lib_path = path.join ( "Porcupine", cmdr_utils.rel_library_path() )
-	porcupine_model_file_path = path.join ( PORCUPINE_ROOT_PATH, "lib/common/porcupine_params.pv" )
-	porcupine_kw_file_ext = cmdr_utils.porcupine_keyword_file_extension()
-	porcupine_keyword_file_paths = [		# these files are the encoded keywords
-		path.join ( PORCUPINE_ROOT_PATH, "keywords", "hey_alexa_%s.ppn" % porcupine_kw_file_ext ),
-		path.join ( PORCUPINE_ROOT_PATH, "keywords", "porcupine_%s.ppn" % porcupine_kw_file_ext ),
-		path.join ( PORCUPINE_ROOT_PATH, "keywords", "buttery_chocolate_%s.ppn" % porcupine_kw_file_ext ),
-		path.join ( PORCUPINE_ROOT_PATH, "keywords", "ill_be_back_%s.ppn" % porcupine_kw_file_ext ),
-		path.join ( PORCUPINE_ROOT_PATH, "keywords", "play_despacito_%s.ppn" % porcupine_kw_file_ext ),
-	]
-	porcupine_kw_sensitivities = [ 0.4, 0.25, 0.4, 0.45, 0.666 ]
+	# determine paths to Porcupine binaries
+	PORCUPINE_ROOT_PATH = cfg['root_path']
+	porcupine_lib_path = path.join ( PORCUPINE_ROOT_PATH, cmdr_utils.rel_library_path() )
+	porcupine_model_file_path = path.join ( PORCUPINE_ROOT_PATH, cfg['lib_path'] )
 
+	# these files are the optimized and encoded keyword triggers
+	porcupine_kw_file_ext = cmdr_utils.porcupine_keyword_file_extension()
+	porcupine_keyword_file_paths = [
+		path.join ( 
+			PORCUPINE_ROOT_PATH, 
+			cfg['keywords']['path'], 
+			"%s_%s.ppn" % (kw['prefix'], porcupine_kw_file_ext) 
+		) for kw in cfg['keywords']['list']
+	]
+
+	# sensitivity for each keyword in the above list; higher = more false positives
+	# float values, ranging from 0 - 1
+	porcupine_kw_sensitivities = [ 
+		kw['sensitivity'] for kw in cfg['keywords']['list']
+	]
+
+	# initialize a Porcupine instance and return it
 	return Porcupine ( 
 		porcupine_lib_path, 
 		porcupine_model_file_path, 
@@ -56,7 +65,7 @@ def init_input_audio_stream ( handler_instance, device=None ):
 def handle_keyword_detected ( cmdr_state, kw_index ):
 	print ( "keyword detected!", kw_index )
 
-	if kw_index == 4:
+	if kw_index == 3:
 		active_process = cmdr_funcs.play_despacito()
 		cmdr_state.active_process = active_process
 
@@ -67,14 +76,14 @@ def main ():
 	platform = cmdr_utils.get_platform(True)
 	machine = cmdr_utils.get_machine(True)
 
+	# track the state, including any active (background) process
+	state = cmdr_utils.CmdrState()
+
 	# init Porcupine
-	handle = init_porcupine()
+	handle = init_porcupine ( state.config['porcupine'] )
 
 	# init audio stream (pyaudio)
 	audio_stream = init_input_audio_stream(handle)
-
-	# track the state, including any active (background) process
-	state = cmdr_utils.CmdrState()
 
 	# listen for keyword in a loop
 	while True:
@@ -103,6 +112,3 @@ def cleanup ( porcupine ):
 
 if __name__ == "__main__":
 	main()
-
-
-print ( "hello cmdr" )

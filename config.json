@@ -1,0 +1,33 @@
+{
+	"version": "0.1",
+	"platform": "linux",
+	"porcupine": {
+		"root_path": "Porcupine",
+		"lib_path": "lib/common/porcupine_params.pv",
+		"keywords": {
+			"path": "keywords",
+			"list": [
+				{
+					"prefix": "buttery_chocolate",
+					"title": "Buttery chocolate",
+					"sensitivity": 0.25
+				},
+				{
+					"prefix": "hey_monica",
+					"title": "Hey Monica",
+					"sensitivity": 0.4
+				},
+				{
+					"prefix": "monica",
+					"title": "Monica",
+					"sensitivity": 0.4
+				},
+				{
+					"prefix": "play_despacito",
+					"title": "Play Despacito",
+					"sensitivity": 0.666
+				}
+			]
+		}
+	}
+}
