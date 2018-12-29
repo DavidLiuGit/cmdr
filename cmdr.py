@@ -86,7 +86,7 @@ def break_loop (signal, frame):
 		exit(0)			# if interrupt flag already set, exit as normal
 	interrupted = True	# otherwise, set the interrupt flag
 signal.signal(signal.SIGINT, break_loop)
-signal.signal(signal.SIGSTOP, break_loop)
+# signal.signal(signal.SIGSTOP, break_loop)
 interrupted = True
 
 
