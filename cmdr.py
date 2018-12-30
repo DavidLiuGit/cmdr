@@ -5,6 +5,7 @@ from os import path
 import struct
 from sys import stderr
 import signal
+from time import sleep
 
 # utils
 import cmdr_utils
@@ -79,15 +80,20 @@ def init_input_audio_stream ( handler_instance, device=None ):
 	)
 
 
-
+interrupted = True
 def break_loop (signal, frame):
+	"""
+	Set the `interrupted` flag to True if it not already True  
+	If `interrupted` is already set, gracefully exit program as normal.  
+	The `interrupted` flag should be checked by an infinite loop to conditionally break
+	"""
 	global interrupted
 	if interrupted:
 		exit(0)			# if interrupt flag already set, exit as normal
 	interrupted = True	# otherwise, set the interrupt flag
+# use `break_loop` to handle SIGINT (ctrl+C)
 signal.signal(signal.SIGINT, break_loop)
-# signal.signal(signal.SIGSTOP, break_loop)
-interrupted = True
+
 
 
 def handle_keyword_detected ( cmdr_state, kw_index, cheetah ):
@@ -106,20 +112,22 @@ def handle_keyword_detected ( cmdr_state, kw_index, cheetah ):
 		active_process = cmdr_funcs.play_despacito()
 		cmdr_state.active_process = active_process
 	else:
+		# sleep for 0.2 seconds to avoid reading in noise from the wake word
+		sleep(0.2)
+
+		# init an audio input stream, using the mic input, with cheetah's params
 		audio_stream = init_input_audio_stream ( cheetah )
-		print (cheetah.frame_length)
+		
+		# listen to command until interrupted (SIGINT) or user stops talking
 		global interrupted
 		interrupted = False
-		while True:
+		while not interrupted:
 			pcm = audio_stream.read ( cheetah.frame_length )
 			pcm = struct.unpack_from ("h" * cheetah.frame_length, pcm)
+			# print ( cmdr_utils.abs_list_avg(pcm), end=", ", flush=True )
 			cheetah.process(pcm)
 
-			if interrupted:
-				break
-
 		print ( cheetah.transcribe() )
-		# global interrupted
 		interrupted = True
 
 
@@ -144,6 +152,7 @@ def main ():
 
 	# listen for keyword in a loop
 	while True:
+		# from the input audio stream, read in a the specified number of frames
 		pcm = audio_stream.read(porcupine.frame_length)
 		pcm = struct.unpack_from("h" * porcupine.frame_length, pcm)
 

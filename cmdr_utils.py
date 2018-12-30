@@ -80,3 +80,12 @@ def porcupine_keyword_file_extension():
 		return 'windows'
 
 	raise NotImplementedError('Porcupine is not supported on %s/%s yet!' % (system, machine))
+
+
+
+def abs_list_avg ( input_list ):
+	"""Given an input list of numbers, return the absolute value average of the list"""
+	sum = 0
+	for i in input_list:
+		sum += abs(i)
+	return sum / len(input_list)
