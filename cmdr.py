@@ -96,6 +96,25 @@ signal.signal(signal.SIGINT, break_loop)
 
 
 
+def cheetah_listen (audio_stream, cheetah):
+	"""Listen to audio stream until interrupted, then transcribe"""
+	# listen to command until interrupted (SIGINT) or user stops talking
+	global interrupted
+	interrupted = False
+	while not interrupted:
+		pcm = audio_stream.read ( cheetah.frame_length )
+		pcm = struct.unpack_from ("h" * cheetah.frame_length, pcm)
+		# print ( cmdr_utils.abs_list_avg(pcm), end=", ", flush=True )
+		cheetah.process(pcm)
+
+	# set the interrupted flag to True (probably redundant)
+	interrupted = True
+
+	# transcribe with cheetah; return results
+	return cheetah.transcribe()
+
+
+
 def handle_keyword_detected ( cmdr_state, kw_index, cheetah ):
 	"""Handle Porcupine keyword detection event"""
 	try:
@@ -117,18 +136,12 @@ def handle_keyword_detected ( cmdr_state, kw_index, cheetah ):
 
 		# init an audio input stream, using the mic input, with cheetah's params
 		audio_stream = init_input_audio_stream ( cheetah )
-		
-		# listen to command until interrupted (SIGINT) or user stops talking
-		global interrupted
-		interrupted = False
-		while not interrupted:
-			pcm = audio_stream.read ( cheetah.frame_length )
-			pcm = struct.unpack_from ("h" * cheetah.frame_length, pcm)
-			# print ( cmdr_utils.abs_list_avg(pcm), end=", ", flush=True )
-			cheetah.process(pcm)
 
-		print ( cheetah.transcribe() )
-		interrupted = True
+		# listen and transcribe from input stream
+		transcript = cheetah_listen (audio_stream, cheetah)
+		print (transcript)
+		
+
 
 
 
