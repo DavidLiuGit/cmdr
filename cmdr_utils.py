@@ -4,13 +4,23 @@ import platform
 import os
 from json import load as json_load
 from pprint import pprint
+from enum import Enum
+from sys import stderr
 
 
 class CmdrState:
 
+	class CmdrStateEnum(Enum):
+		IDLE = -1					# doing nothing
+		LISTENING_FOR_KEYWORD = 10	# Porcupine: listening for keyword
+		LISTENING_CHEETAH = 20		# Cheetah: listening to input and processing
+		CHEETAH_TRANSCRIBING = 22	# Cheetah: computing transcription
+		ACTIVE_PROCESS = 99			# Another process was launched and is currently running
+
 	def __init__ (self):
-		self.config = self.load_config()		# read in config file, config.json
-		self.active_process = None		#
+		self.config = self.load_config()	# read in config file, config.json
+		self.active_process = None			# 
+		self.state = self.CmdrStateEnum.IDLE
 
 	def load_config ( self, file="config.json" ):
 		"""Read in the JSON config file as a dict for easy reference"""
@@ -18,6 +28,16 @@ class CmdrState:
 			cfg = json_load(f)
 		print ( "Cmdr version ", cfg["version"] )
 		return cfg
+
+	@property
+	def state (self): return self._state
+	
+	@state.setter
+	def state (self, val):
+		try: self._state = self.CmdrStateEnum(val)
+		except:	print ("Error: invalid CmdrStateEnum", file=stderr)
+
+
 
 
 # class CmdrConfig:

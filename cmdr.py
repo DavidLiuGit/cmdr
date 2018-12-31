@@ -6,6 +6,7 @@ import struct
 from sys import stderr
 import signal
 from time import sleep
+from math import floor
 
 # utils
 import cmdr_utils
@@ -71,13 +72,13 @@ def init_input_audio_stream ( handler_instance, device=None ):
 	"""Init and return audio stream (pyaudio)"""
 	pa = pyaudio.PyAudio()
 	return pa.open(
-		rate=handler_instance.sample_rate,
-		channels=1,
-		format=pyaudio.paInt16,
-		input=True,
-		frames_per_buffer=handler_instance.frame_length,
-		input_device_index=device
-	)
+		rate=handler_instance.sample_rate,	# sample rate (samples/second)
+		channels=1,							# single channel input
+		format=pyaudio.paInt16,				# 16-bit encoding
+		input=True,							# use as input
+		frames_per_buffer=handler_instance.frame_length,	# samples/buffer
+		input_device_index=device			# leave as None to use sys default input device
+	)	# buffers/sec = (frames/sec) * (buffers/frames)
 
 
 interrupted = True
@@ -96,7 +97,7 @@ signal.signal(signal.SIGINT, break_loop)
 
 
 
-def cheetah_listen (audio_stream, cheetah):
+def cheetah_listen (cmdr_state, audio_stream, cheetah):
 	"""Listen to audio stream until interrupted, then transcribe"""
 	# listen to command until interrupted (SIGINT) or user stops talking
 	global interrupted
@@ -104,7 +105,7 @@ def cheetah_listen (audio_stream, cheetah):
 	while not interrupted:
 		pcm = audio_stream.read ( cheetah.frame_length )
 		pcm = struct.unpack_from ("h" * cheetah.frame_length, pcm)
-		# print ( cmdr_utils.abs_list_avg(pcm), end=", ", flush=True )
+		print ( floor(cmdr_utils.abs_list_avg(pcm)), end=", ", flush=True )
 		cheetah.process(pcm)
 
 	# set the interrupted flag to True (probably redundant)
@@ -138,7 +139,7 @@ def handle_keyword_detected ( cmdr_state, kw_index, cheetah ):
 		audio_stream = init_input_audio_stream ( cheetah )
 
 		# listen and transcribe from input stream
-		transcript = cheetah_listen (audio_stream, cheetah)
+		transcript = cheetah_listen (cmdr_state, audio_stream, cheetah)
 		print (transcript)
 		
 
