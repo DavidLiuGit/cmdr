@@ -130,15 +130,17 @@ def handle_keyword_detected ( cmdr_state, kw_index, cheetah ):
 
 	if kw_index == 3:
 		active_process = cmdr_funcs.play_despacito()
+		cmdr_state.state = cmdr_state.CmdrStateEnum.ACTIVE_PROCESS
 		cmdr_state.active_process = active_process
 	else:
-		# sleep for 0.2 seconds to avoid reading in noise from the wake word
-		sleep(0.2)
-
 		# init an audio input stream, using the mic input, with cheetah's params
 		audio_stream = init_input_audio_stream ( cheetah )
 
+		# sleep for 0.2 seconds to avoid reading in noise from the wake word
+		sleep(0.2)
+
 		# listen and transcribe from input stream
+		cmdr_state.state = cmdr_state.CmdrStateEnum.CHEETAH_LISTENING
 		transcript = cheetah_listen (cmdr_state, audio_stream, cheetah)
 		print (transcript)
 		
@@ -161,8 +163,9 @@ def main ():
 	# init Cheetah
 	cheetah = init_cheetah ( state.config['cheetah'] )
 
-	# init audio stream (pyaudio)
+	# init audio stream (pyaudio) for Porcupine
 	audio_stream = init_input_audio_stream(porcupine)
+	state.state = state.CmdrStateEnum.PORCUPINE_LISTENING	# Porcupine begin listening
 
 	# listen for keyword in a loop
 	while True:
@@ -179,6 +182,7 @@ def main ():
 
 			# porcupine keyword detection event
 			handle_keyword_detected ( state, keyword_index, cheetah )
+			state.state = state.CmdrStateEnum.PORCUPINE_LISTENING
 
 
 	# cleanup

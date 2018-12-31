@@ -12,10 +12,10 @@ class CmdrState:
 
 	class CmdrStateEnum(Enum):
 		IDLE = -1					# doing nothing
-		LISTENING_FOR_KEYWORD = 10	# Porcupine: listening for keyword
-		LISTENING_CHEETAH = 20		# Cheetah: listening to input and processing
-		CHEETAH_TRANSCRIBING = 22	# Cheetah: computing transcription
-		ACTIVE_PROCESS = 99			# Another process was launched and is currently running
+		PORCUPINE_LISTENING = 1		# Porcupine: listening for keyword
+		CHEETAH_LISTENING = 100		# Cheetah: listening to input and processing
+		CHEETAH_TRANSCRIBING = 101	# Cheetah: computing transcription
+		ACTIVE_PROCESS = 2			# Another process was launched and is currently running
 
 	def __init__ (self):
 		self.config = self.load_config()	# read in config file, config.json
