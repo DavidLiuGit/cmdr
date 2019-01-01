@@ -132,6 +132,9 @@ def handle_keyword_detected ( cmdr_state, kw_index, cheetah ):
 		active_process = cmdr_funcs.play_despacito()
 		cmdr_state.state = cmdr_state.CmdrStateEnum.ACTIVE_PROCESS
 		cmdr_state.active_process = active_process
+	elif kw_index == 4:
+		cmdr_state.active_process = cmdr_funcs.play_audio_background("assets/music/untitled.mp3")
+		cmdr_state.state = cmdr_state.CmdrStateEnum.ACTIVE_PROCESS
 	else:
 		# init an audio input stream, using the mic input, with cheetah's params
 		audio_stream = init_input_audio_stream ( cheetah )
