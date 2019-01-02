@@ -8,15 +8,19 @@ Cmdr is an offline voice assistant, powered by the [libraries](https://github.co
 
 
 ## Usage
-Cmdr has been tested for use on Linux x86 machines, running Ubuntu.
+Cmdr has been tested for use on Linux x86 machines, running Ubuntu, for English speakers.
 * Install dependencies with pip
 	```bash
 	pip install -r requirements.txt
 	```
+* Cmdr uses [SpaCy](https://spacy.io) for NLP. SpaCy and it's dependencies can be installed with pip in the step above. Models for SpaCy can be installed with the following commands:
+	```bash
+	python3 -m spacy download en
+	```
 * Run cmdr
 	```bash
 	python3 cmdr.py
-
+	```
 
 
 ## Features
