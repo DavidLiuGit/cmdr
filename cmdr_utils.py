@@ -8,7 +8,8 @@ from enum import Enum
 from sys import stderr
 
 
-class CmdrState:
+
+class Cmdr:
 
 	class CmdrStateEnum(Enum):
 		IDLE = -1					# doing nothing
@@ -17,17 +18,20 @@ class CmdrState:
 		CHEETAH_TRANSCRIBING = 101	# Cheetah: computing transcription
 		ACTIVE_PROCESS = 2			# Another process was launched and is currently running
 
-	def __init__ (self):
-		self.config = self.load_config()	# read in config file, config.json
-		self.active_process = None			# 
+
+	def __init__ (self, config_file="config.json"):
+		self.config = self.load_config(config_file)	# read in config file, config.json
+		self.active_process = None
 		self.state = self.CmdrStateEnum.IDLE
 
-	def load_config ( self, file="config.json" ):
+
+	def load_config ( self, file ):
 		"""Read in the JSON config file as a dict for easy reference"""
 		with open(file) as f:
 			cfg = json_load(f)
 		print ( "Cmdr version ", cfg["version"] )
 		return cfg
+
 
 	@property
 	def state (self): return self._state

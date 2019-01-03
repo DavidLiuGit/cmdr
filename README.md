@@ -26,3 +26,12 @@ Cmdr has been tested for use on Linux x86 machines, running Ubuntu, for English 
 ## Features
 
 ![Common uses for voice assistants](https://ei.marketwatch.com/Multimedia/2018/01/18/Photos/ZH/MW-GC002_voice__20180118140125_ZH.jpg?uuid=fb25668e-fc81-11e7-9b31-9c8e992d421e )
+
+
+
+
+## Commands
+
+Try the following commands with Cmdr. Since Cmdr is primarily an offline voice assistant, commands that require Internet connection are marked with an asterisk*
+
+### 

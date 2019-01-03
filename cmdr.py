@@ -146,7 +146,7 @@ def handle_keyword_detected ( cmdr_state, kw_index, cheetah ):
 		cmdr_state.state = cmdr_state.CmdrStateEnum.CHEETAH_LISTENING
 		transcript = cheetah_listen (cmdr_state, audio_stream, cheetah)
 		print (transcript)
-		
+
 
 
 
@@ -158,17 +158,17 @@ def main ():
 	machine = cmdr_utils.get_machine(True)
 
 	# track the state, including any active (background) process
-	state = cmdr_utils.CmdrState()
+	cmdr = cmdr_utils.Cmdr()
 
 	# init Porcupine
-	porcupine = init_porcupine ( state.config['porcupine'] )
+	porcupine = init_porcupine ( cmdr.config['porcupine'] )
 
 	# init Cheetah
-	cheetah = init_cheetah ( state.config['cheetah'] )
+	cheetah = init_cheetah ( cmdr.config['cheetah'] )
 
 	# init audio stream (pyaudio) for Porcupine
 	audio_stream = init_input_audio_stream(porcupine)
-	state.state = state.CmdrStateEnum.PORCUPINE_LISTENING	# Porcupine begin listening
+	cmdr.cmdr = cmdr.CmdrStateEnum.PORCUPINE_LISTENING	# Porcupine begin listening
 
 	# listen for keyword in a loop
 	while True:
@@ -180,13 +180,12 @@ def main ():
 		# if a keyword is detected
 		if keyword_index >= 0:
 			# if there is an active background process, kill it
-			if state.active_process:
-				state.active_process.terminate()
+			if cmdr.active_process:
+				cmdr.active_process.terminate()
 
 			# porcupine keyword detection event
-			handle_keyword_detected ( state, keyword_index, cheetah )
-			state.state = state.CmdrStateEnum.PORCUPINE_LISTENING
-
+			handle_keyword_detected ( cmdr, keyword_index, cheetah )
+			cmdr.cmdr = cmdr.CmdrStateEnum.PORCUPINE_LISTENING
 
 	# cleanup
 	cleanup ( porcupine )
@@ -195,6 +194,7 @@ def main ():
 
 def cleanup ( porcupine ):
 	porcupine.delete()
+
 
 
 if __name__ == "__main__":
